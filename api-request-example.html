@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <title>Your EVE Data</title>
+  <meta charset="utf-8">
+  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  <script type="text/javascript">
+
+    /*
+        EVE Online
+        Sample API request
+        by Michael Moehler - m.moehler@xf9.de
+    */
+
+    // you probably want to make more than one request
+    var api_baseurl = 'https://api.eveonline.com';
+    var api_keyID;
+    var api_vCode;
+
+    // load character data from api
+    function fetch_chars(){
+
+      var placeholder = $('#chars'); // where to place all the gathered stuff
+
+      api_keyID = $('#keyID').val(); // get the Key ID
+      api_vCode = $('#vCode').val(); // get the Verification Code
+
+      // ajax request
+      $.ajax({
+        
+        url : api_baseurl+'/account/Characters.xml.aspx',   // we want character information
+        crossDomain : true,                                 // yep - that's a cross domain request
+        dataType : 'xml',                                   // we want XML data (eve won't give us something else)
+        
+        data : {                                            //  the api data 
+          'keyID' : api_keyID,
+          'vCode' : api_vCode
+        },
+
+        // what to do when something goes wrong
+        error: function() {
+          placeholder.text("Could not get character data - please check Key ID and Verification Code.");
+        },
+
+        // what to do if the request succeeded
+        success:function(data){
+
+          var list = $('<ul>');                     // prepare a list
+
+          $(data).find( "row" ).each(function(){    // process each character
+
+            var chararcter = $('<li>',{             // create a new entry
+              text : $(this).attr('name')           // text will be the character name
+            });
+            
+            list.append(chararcter);                // add it to the list
+          });
+
+          placeholder.html(list);                   // add list to placeholder
+        }
+      });
+    }
+
+    // on document ready
+    $(function(){
+
+      $('#api-data button').click(function(e){
+        fetch_chars();      // fetch
+        e.preventDefault(); // don't submit
+      });
+
+    });
+
+  </script>
+
+</head>
+<body>
+  <h1>EVE Datacenter</h1>
+  <form id="api-data">
+    <input id="keyID" type="text" placeholder="Key ID">
+    <input id="vCode" type="text" placeholder="Verification Code">
+    <button>Fetch Characters</button>
+  </form>
+  <div id="chars"></div>
+  <div id="char-data"></div>
+</body>
+</html>
